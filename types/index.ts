@@ -73,6 +73,7 @@ export type LessonProgress = {
 };
 
 export type TranslationDirection = "vi-to-zh" | "zh-to-vi";
+export type TranslationInputDirection = TranslationDirection | "auto";
 
 export type WordBreakdownItem = {
   word: string;
@@ -87,5 +88,6 @@ export type TranslationResult = {
   pinyin: string;
   vietnameseExplanation: string;
   wordBreakdown: WordBreakdownItem[];
+  commonReplies: LessonItem[];
   source: "fallback" | "ai";
 };
