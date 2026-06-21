@@ -10,7 +10,10 @@ export default function LessonsPage() {
   const [progress, setProgress] = useState<Record<string, LessonProgress>>({});
 
   useEffect(() => {
-    setProgress(getAllLessonProgress());
+    const timer = window.setTimeout(() => {
+      setProgress(getAllLessonProgress());
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   return (
