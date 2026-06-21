@@ -1,14 +1,58 @@
 import { NextResponse } from "next/server";
-import { translateWithFallback } from "@/lib/translate";
-import type { TranslationDirection, TranslationResult } from "@/types";
+import { resolveTranslationDirection, translateWithFallback } from "@/lib/translate";
+import type {
+  LessonItem,
+  TranslationDirection,
+  TranslationInputDirection,
+  TranslationResult,
+  WordBreakdownItem,
+} from "@/types";
 
 type TranslateRequest = {
   text?: string;
-  direction?: TranslationDirection;
+  direction?: TranslationInputDirection;
 };
 
-function isTranslationDirection(value: unknown): value is TranslationDirection {
-  return value === "vi-to-zh" || value === "zh-to-vi";
+type OpenAiChatResponse = {
+  choices?: Array<{ message?: { content?: string } }>;
+};
+
+function isTranslationInputDirection(value: unknown): value is TranslationInputDirection {
+  return value === "auto" || value === "vi-to-zh" || value === "zh-to-vi";
+}
+
+function asWordBreakdown(items: unknown): WordBreakdownItem[] {
+  if (!Array.isArray(items)) return [];
+
+  return items
+    .filter((item) => item && typeof item === "object" && "word" in item)
+    .map((item) => {
+      const typedItem = item as Partial<WordBreakdownItem>;
+      return {
+        word: String(typedItem.word || ""),
+        pinyin: typedItem.pinyin ? String(typedItem.pinyin) : undefined,
+        meaningVi: String(typedItem.meaningVi || ""),
+      };
+    })
+    .filter((item) => item.word && item.meaningVi);
+}
+
+function asCommonReplies(items: unknown): LessonItem[] {
+  if (!Array.isArray(items)) return [];
+
+  return items
+    .filter((item) => item && typeof item === "object" && "chinese" in item)
+    .map((item, index) => {
+      const typedItem = item as Partial<LessonItem>;
+      return {
+        id: String(typedItem.id || `reply-${index + 1}`),
+        chinese: String(typedItem.chinese || ""),
+        pinyin: String(typedItem.pinyin || ""),
+        vietnamese: String(typedItem.vietnamese || ""),
+        noteVi: typedItem.noteVi ? String(typedItem.noteVi) : undefined,
+      };
+    })
+    .filter((item) => item.chinese && item.vietnamese);
 }
 
 function sanitizeAiResult(
@@ -22,15 +66,8 @@ function sanitizeAiResult(
     translatedText: String(payload.translatedText || ""),
     pinyin: String(payload.pinyin || ""),
     vietnameseExplanation: String(payload.vietnameseExplanation || ""),
-    wordBreakdown: Array.isArray(payload.wordBreakdown)
-      ? payload.wordBreakdown
-          .filter((item) => item && typeof item.word === "string")
-          .map((item) => ({
-            word: String(item.word),
-            pinyin: item.pinyin ? String(item.pinyin) : undefined,
-            meaningVi: String(item.meaningVi || ""),
-          }))
-      : [],
+    wordBreakdown: asWordBreakdown(payload.wordBreakdown),
+    commonReplies: asCommonReplies(payload.commonReplies),
     source: "ai",
   };
 }
@@ -54,17 +91,17 @@ async function translateWithOpenAi(text: string, direction: TranslationDirection
         {
           role: "system",
           content:
-            "You are a Vietnamese-first Chinese learning translator. Return strict JSON with translatedText, pinyin, vietnameseExplanation, wordBreakdown. wordBreakdown must be an array of { word, pinyin, meaningVi }. Use simple beginner-friendly Chinese and Vietnamese explanations.",
+            "You are the core translation engine for a Vietnamese-first Chinese learning app. The user may enter Vietnamese or Simplified Chinese. Return strict JSON only with these keys: translatedText, pinyin, vietnameseExplanation, wordBreakdown, commonReplies. wordBreakdown must be an array of { word, pinyin, meaningVi }. commonReplies must be 2 to 4 natural Simplified Chinese replies, each as { id, chinese, pinyin, vietnamese }. Keep Chinese beginner-friendly, natural for daily life and romantic chat, and explain in Vietnamese.",
         },
         {
           role: "user",
           content: JSON.stringify({
             text,
             direction,
-            rules:
+            outputRules:
               direction === "vi-to-zh"
-                ? "Translate Vietnamese to Chinese. Include pinyin for the Chinese result."
-                : "Explain Chinese in Vietnamese. Include pinyin for the Chinese source text.",
+                ? "Translate Vietnamese to natural Simplified Chinese. pinyin is for the Chinese translation. vietnameseExplanation explains nuance and usage in Vietnamese."
+                : "Translate or explain the Chinese text in Vietnamese. pinyin is for the source Chinese text. commonReplies should be natural Chinese replies to this message.",
           }),
         },
       ],
@@ -75,9 +112,7 @@ async function translateWithOpenAi(text: string, direction: TranslationDirection
     throw new Error(`OpenAI request failed with status ${response.status}`);
   }
 
-  const data = (await response.json()) as {
-    choices?: Array<{ message?: { content?: string } }>;
-  };
+  const data = (await response.json()) as OpenAiChatResponse;
   const content = data.choices?.[0]?.message?.content;
   if (!content) throw new Error("OpenAI response was empty");
 
@@ -88,15 +123,17 @@ export async function POST(request: Request) {
   try {
     const body = (await request.json()) as TranslateRequest;
     const text = body.text?.trim() || "";
-    const direction = body.direction;
 
     if (!text) {
       return NextResponse.json({ error: "Text is required" }, { status: 400 });
     }
 
-    if (!isTranslationDirection(direction)) {
+    const inputDirection = body.direction || "auto";
+    if (!isTranslationInputDirection(inputDirection)) {
       return NextResponse.json({ error: "Invalid direction" }, { status: 400 });
     }
+
+    const direction = resolveTranslationDirection(text, inputDirection);
 
     try {
       const aiResult = await translateWithOpenAi(text, direction);
@@ -104,7 +141,7 @@ export async function POST(request: Request) {
         return NextResponse.json(aiResult);
       }
     } catch {
-      // Keep the MVP useful even when AI credentials, network, or parsing fails.
+      // Keep translation usable when credentials, network, or model JSON fails.
     }
 
     return NextResponse.json(translateWithFallback(text, direction));
