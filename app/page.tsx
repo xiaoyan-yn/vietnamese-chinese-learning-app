@@ -14,9 +14,12 @@ export default function HomePage() {
   const recommendedScenario = scenarios[1];
 
   useEffect(() => {
-    markTodayCheckin();
-    setStreakDays(getStreakDays());
-    setCompletedLessons(getCompletedLessonCount());
+    const timer = window.setTimeout(() => {
+      markTodayCheckin();
+      setStreakDays(getStreakDays());
+      setCompletedLessons(getCompletedLessonCount());
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   return (
