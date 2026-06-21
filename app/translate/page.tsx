@@ -3,18 +3,31 @@
 import { useState } from "react";
 import { TranslationResult } from "@/components/TranslationResult";
 import type {
-  TranslationDirection,
+  TranslationInputDirection,
   TranslationResult as TranslationResultType,
 } from "@/types";
 
-const directionOptions: Array<{ value: TranslationDirection; label: string; hint: string }> = [
-  { value: "vi-to-zh", label: "Viet -> Trung", hint: "Nhap tieng Viet de nhan tieng Trung va pinyin." },
-  { value: "zh-to-vi", label: "Trung -> Viet", hint: "Nhap tieng Trung de xem giai thich tieng Viet." },
+const directionOptions: Array<{ value: TranslationInputDirection; label: string; hint: string }> = [
+  {
+    value: "auto",
+    label: "Tự nhận biết",
+    hint: "Nhập tiếng Việt hoặc tiếng Trung, hệ thống tự chọn hướng dịch.",
+  },
+  {
+    value: "vi-to-zh",
+    label: "Việt → Trung",
+    hint: "Nhập tiếng Việt để nhận câu tiếng Trung, pinyin và cách dùng.",
+  },
+  {
+    value: "zh-to-vi",
+    label: "Trung → Việt",
+    hint: "Nhập tiếng Trung để xem nghĩa tiếng Việt, pinyin và tách từ.",
+  },
 ];
 
 export default function TranslatePage() {
-  const [text, setText] = useState("Xin chào");
-  const [direction, setDirection] = useState<TranslationDirection>("vi-to-zh");
+  const [text, setText] = useState("Anh nhớ em");
+  const [direction, setDirection] = useState<TranslationInputDirection>("auto");
   const [result, setResult] = useState<TranslationResultType | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -22,7 +35,7 @@ export default function TranslatePage() {
   async function handleTranslate() {
     const trimmedText = text.trim();
     if (!trimmedText) {
-      setError("Vui long nhap cau can dich.");
+      setError("Vui lòng nhập câu cần dịch.");
       setResult(null);
       return;
     }
@@ -39,7 +52,7 @@ export default function TranslatePage() {
 
       const payload = await response.json();
       if (!response.ok) {
-        throw new Error(payload.error || "Khong the dich cau nay.");
+        throw new Error(payload.error || "Không thể dịch câu này.");
       }
 
       setResult(payload as TranslationResultType);
@@ -48,7 +61,7 @@ export default function TranslatePage() {
       setError(
         translationError instanceof Error
           ? translationError.message
-          : "Da co loi khi dich. Vui long thu lai.",
+          : "Đã có lỗi khi dịch. Vui lòng thử lại.",
       );
     } finally {
       setLoading(false);
@@ -58,20 +71,20 @@ export default function TranslatePage() {
   return (
     <main className="page-wrap">
       <header>
-        <p className="text-sm font-semibold text-leaf">Cong cu</p>
-        <h1 className="mt-1 text-2xl font-bold text-ink">Dich Viet - Trung</h1>
+        <p className="text-sm font-semibold text-leaf">Công cụ chính</p>
+        <h1 className="mt-1 text-2xl font-bold text-ink">Dịch Việt - Trung</h1>
         <p className="mt-2 text-sm leading-6 text-slate-600">
-          Dich cau thuong dung, xem pinyin, giai thich tieng Viet, tach tu va nghe
-          phat am tieng Trung.
+          Nhập câu bất kỳ để nhận bản dịch, pinyin, giải thích tiếng Việt, tách từ,
+          câu trả lời thường dùng và phát âm tiếng Trung.
         </p>
       </header>
 
       <section className="mt-5 rounded-lg bg-white p-4 shadow-soft">
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           {directionOptions.map((option) => (
             <button
               key={option.value}
-              className={`rounded-md px-3 py-3 text-sm font-semibold ${
+              className={`min-h-12 rounded-md px-2 py-3 text-sm font-semibold ${
                 direction === option.value ? "bg-leaf text-white" : "bg-slate-100 text-slate-600"
               }`}
               onClick={() => {
@@ -91,13 +104,17 @@ export default function TranslatePage() {
         </p>
 
         <label htmlFor="translate-input" className="mt-4 block text-sm font-semibold text-ink">
-          Nhap cau can dich
+          Nhập câu cần dịch
         </label>
         <textarea
           id="translate-input"
-          className="mt-3 min-h-32 w-full resize-none rounded-md border border-slate-200 bg-slate-50 p-3 text-sm outline-none focus:border-leaf focus:bg-white"
+          className="mt-3 min-h-36 w-full resize-none rounded-md border border-slate-200 bg-slate-50 p-3 text-base outline-none focus:border-leaf focus:bg-white"
           onChange={(event) => setText(event.target.value)}
-          placeholder={direction === "vi-to-zh" ? "Vi du: Xin chào" : "例如：你好"}
+          placeholder={
+            direction === "zh-to-vi"
+              ? "例如：你今天吃饭了吗？"
+              : "Ví dụ: Anh nhớ em / Cái này bao nhiêu tiền?"
+          }
           value={text}
         />
 
@@ -111,7 +128,7 @@ export default function TranslatePage() {
           onClick={handleTranslate}
           type="button"
         >
-          {loading ? "Dang dich..." : "Dich ngay"}
+          {loading ? "Đang dịch..." : "Dịch ngay"}
         </button>
       </section>
 
@@ -120,9 +137,9 @@ export default function TranslatePage() {
           <TranslationResult result={result} />
         ) : (
           <div className="rounded-lg border border-dashed border-emerald-200 bg-mint p-4">
-            <p className="text-sm font-semibold text-leaf">Goi y thu nhanh</p>
+            <p className="text-sm font-semibold text-leaf">Gợi ý thử nhanh</p>
             <p className="mt-2 text-sm leading-6 text-slate-700">
-              Thu nhap: Xin chào, Cảm ơn, Anh nhớ em, Tôi muốn ăn cơm, hoặc 这个多少钱？
+              Thử nhập: Xin chào, Cảm ơn, Anh nhớ em, Tôi muốn ăn cơm, hoặc 这个多少钱？
             </p>
           </div>
         )}
