@@ -13,8 +13,13 @@ export function SpeakButton({ text }: SpeakButtonProps) {
   const [speaking, setSpeaking] = useState(false);
 
   useEffect(() => {
-    setSupported(canSpeak());
-    return () => stopSpeaking();
+    const timer = window.setTimeout(() => {
+      setSupported(canSpeak());
+    }, 0);
+    return () => {
+      window.clearTimeout(timer);
+      stopSpeaking();
+    };
   }, []);
 
   function handleClick() {
