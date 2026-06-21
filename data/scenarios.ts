@@ -1,0 +1,148 @@
+import type { Scenario } from "@/types";
+
+export const scenarios: Scenario[] = [
+  {
+    id: "greetings",
+    titleVi: "Chao hoi",
+    titleZh: "打招呼",
+    descriptionVi: "Dung khi gap nguoi moi hoac bat dau tro chuyen.",
+    phrases: [
+      {
+        id: "g1",
+        chinese: "你好，很高兴认识你。",
+        pinyin: "ni hao, hen gao xing ren shi ni.",
+        vietnamese: "Xin chao, rat vui duoc quen ban.",
+        usageVi: "Dung khi lan dau gap mot nguoi Trung Quoc.",
+        replacements: ["你好 -> 早上好", "你 -> 您"],
+      },
+      {
+        id: "g2",
+        chinese: "你最近怎么样？",
+        pinyin: "ni zui jin zen me yang?",
+        vietnamese: "Gan day ban the nao?",
+        usageVi: "Dung de hoi tham nguoi da quen.",
+        replacements: ["最近 -> 今天", "你 -> 你们"],
+      },
+    ],
+  },
+  {
+    id: "love-chat",
+    titleVi: "Nhan tin tinh cam",
+    titleZh: "恋爱聊天",
+    descriptionVi: "Cac cau ngan de quan tam nguoi yeu Trung Quoc.",
+    phrases: [
+      {
+        id: "l1",
+        chinese: "你吃饭了吗？",
+        pinyin: "ni chi fan le ma?",
+        vietnamese: "Anh/em an com chua?",
+        usageVi: "Cau hoi tham rat pho bien trong tieng Trung.",
+        replacements: ["吃饭 -> 休息", "你 -> 宝贝"],
+      },
+      {
+        id: "l2",
+        chinese: "我想和你聊天。",
+        pinyin: "wo xiang he ni liao tian.",
+        vietnamese: "Em/Anh muon noi chuyen voi anh/em.",
+        usageVi: "Dung khi muon bat dau cuoc tro chuyen than mat.",
+        replacements: ["聊天 -> 见面", "你 -> 你多一点"],
+      },
+    ],
+  },
+  {
+    id: "restaurant",
+    titleVi: "An uong va goi mon",
+    titleZh: "吃饭点餐",
+    descriptionVi: "Dung trong nha hang, quan an hoac khi goi do uong.",
+    phrases: [
+      {
+        id: "r1",
+        chinese: "我要这个。",
+        pinyin: "wo yao zhe ge.",
+        vietnamese: "Toi muon cai nay.",
+        usageVi: "Chi vao mon an tren menu va noi cau nay.",
+        replacements: ["这个 -> 那个", "我要 -> 我想要"],
+      },
+      {
+        id: "r2",
+        chinese: "不要辣。",
+        pinyin: "bu yao la.",
+        vietnamese: "Khong cay.",
+        usageVi: "Dung khi goi mon va khong an duoc cay.",
+        replacements: ["辣 -> 糖", "不要 -> 少一点"],
+      },
+    ],
+  },
+  {
+    id: "shopping",
+    titleVi: "Mua do",
+    titleZh: "买东西",
+    descriptionVi: "Dung khi hoi gia, mac ca hoac mua hang.",
+    phrases: [
+      {
+        id: "s1",
+        chinese: "这个多少钱？",
+        pinyin: "zhe ge duo shao qian?",
+        vietnamese: "Cai nay bao nhieu tien?",
+        usageVi: "Cau hoi gia co ban nhat.",
+        replacements: ["这个 -> 那个", "多少钱 -> 几块钱"],
+      },
+      {
+        id: "s2",
+        chinese: "可以便宜一点吗？",
+        pinyin: "ke yi pian yi yi dian ma?",
+        vietnamese: "Co the re hon mot chut khong?",
+        usageVi: "Dung khi muon mac ca lich su.",
+        replacements: ["便宜一点 -> 打折", "可以 -> 能"],
+      },
+    ],
+  },
+  {
+    id: "directions",
+    titleVi: "Hoi duong",
+    titleZh: "问路",
+    descriptionVi: "Dung khi can hoi vi tri hoac cach di.",
+    phrases: [
+      {
+        id: "d1",
+        chinese: "请问，地铁站在哪里？",
+        pinyin: "qing wen, di tie zhan zai na li?",
+        vietnamese: "Xin hoi, ga tau dien ngam o dau?",
+        usageVi: "Dung de hoi duong mot cach lich su.",
+        replacements: ["地铁站 -> 洗手间", "在哪里 -> 怎么走"],
+      },
+      {
+        id: "d2",
+        chinese: "这里远吗？",
+        pinyin: "zhe li yuan ma?",
+        vietnamese: "Cho nay co xa khong?",
+        usageVi: "Dung khi muon biet khoang cach.",
+        replacements: ["这里 -> 那里", "远 -> 近"],
+      },
+    ],
+  },
+  {
+    id: "work",
+    titleVi: "Giao tiep cong viec",
+    titleZh: "工作交流",
+    descriptionVi: "Dung trong cong viec voi dong nghiep hoac khach hang.",
+    phrases: [
+      {
+        id: "w1",
+        chinese: "我明白了。",
+        pinyin: "wo ming bai le.",
+        vietnamese: "Toi hieu roi.",
+        usageVi: "Dung khi ban da hieu yeu cau hoac noi dung cong viec.",
+        replacements: ["明白 -> 知道", "我 -> 我们"],
+      },
+      {
+        id: "w2",
+        chinese: "我需要一点时间。",
+        pinyin: "wo xu yao yi dian shi jian.",
+        vietnamese: "Toi can mot chut thoi gian.",
+        usageVi: "Dung khi can them thoi gian xu ly viec.",
+        replacements: ["一点时间 -> 十分钟", "我需要 -> 我想要"],
+      },
+    ],
+  },
+];
