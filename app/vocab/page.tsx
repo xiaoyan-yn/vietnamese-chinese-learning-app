@@ -14,7 +14,10 @@ export default function VocabPage() {
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
 
   useEffect(() => {
-    setFavorites(getFavorites());
+    const timer = window.setTimeout(() => {
+      setFavorites(getFavorites());
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   function handleRemove(id: string) {
